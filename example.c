@@ -37,17 +37,36 @@ typedef struct
   uint  biClrImportant; 
 }HeadGr;
 #pragma pack(pop)
-
-void display()
+char* readImg(char* fileName)
 {
-
-    FILE *f;
-    HeadGr head;
     int rgbBytes,d,bytesPerRow;
     char *buf, *otherDate;
-    glClear(GL_COLOR_BUFFER_BIT);
+    FILE *f;
+    HeadGr head;
     f=fopen("texture.bmp","rb");
-    if(f==NULL)
+    if (f==NULL)
+        return NULL;
+    else
+    {
+        fread(&head,54,1,f);
+        rgbBytes=head.biWidth*3;
+        d=rgbBytes%4;
+        bytesPerRow=d ? rgbBytes+(4-d)  :rgbBytes;
+        buf=(char*)malloc(bytesPerRow*head.biHeight);
+        otherDate=(char*) malloc(head.bfOffBits-54);
+        fread(otherDate,(head.bfOffBits-54),1,f);
+        fread(buf,bytesPerRow*head.biHeight,1,f);          
+        fclose(f); 
+        free(otherDate);
+        return buf;
+    }
+}
+void display()
+{
+    char *buf;
+    glClear(GL_COLOR_BUFFER_BIT);
+    buf=readImg("texture.bmp");
+    if(buf==NULL)
     {
         glBegin(GL_QUADS);
             glColor3f(0.0, 1.0, 1.0);
@@ -60,26 +79,10 @@ void display()
     }
     else
     {
-        fread(&head,54,1,f);
-        rgbBytes=head.biWidth*3;
-        d=rgbBytes%4;
-        bytesPerRow=d ? rgbBytes+(4-d)  :rgbBytes;
-        buf=(char*)malloc(bytesPerRow*head.biHeight);
-        otherDate=(char*) malloc(head.bfOffBits-54);
-        fread(otherDate,(head.bfOffBits-54),1,f);
-        fread(buf,bytesPerRow*head.biHeight,1,f);          
-        fclose(f); 
         glDrawPixels(700, 700, GL_BGR, GL_UNSIGNED_BYTE, buf);
-
-        /*glBegin(GL_QUADS);
-            glColor3f(1.0, 0.0, 0.0);
-            glVertex2i(0, 700);
-            glVertex2i(0, 0);
-            glVertex2i(700, 0);
-            glVertex2i(700, 700);
-        glEnd();*/
         glutSwapBuffers();
     }
+    free(buf);
 }
  
 int main (int argc, char * argv[])
@@ -88,7 +91,7 @@ int main (int argc, char * argv[])
         glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
        
         glutInitWindowSize(700, 700);
-        glutCreateWindow("OpenGL lesson 1");
+        glutCreateWindow("Lab5");
        
         glutReshapeFunc(reshape);
         glutDisplayFunc(display);
