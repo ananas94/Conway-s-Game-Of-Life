@@ -96,10 +96,10 @@ void display()
           {
             glBegin(GL_QUADS);
               glColor3f(1.0, 1.0, 1.0);
-              glVertex2i(i*20, j*20);
-              glVertex2i((i+1)*20,j*20);
-              glVertex2i((i+1)*20,(j+1)*20);
-              glVertex2i(i*20,(j+1)*20);
+              glVertex2i(i*20,700- j*20);
+              glVertex2i((i+1)*20,700-j*20);
+              glVertex2i((i+1)*20,700-(j+1)*20);
+              glVertex2i(i*20,700-(j+1)*20);
             glEnd();
 
           }
