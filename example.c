@@ -2,45 +2,26 @@
 /*http://habrahabr.ru/post/111175/*/
 #include <GL/glut.h>    
 #include <stdio.h>
+#include "life.h"
+static char *backgroundTexture;
 void reshape(int w, int h)
 {
-        glViewport(0, 0, w, h);
-       
-        glMatrixMode(GL_PROJECTION);
-        glLoadIdentity();
-        gluOrtho2D(0, w, 0, h);
-       
-        glMatrixMode(GL_MODELVIEW);
-        glLoadIdentity();
+    if ((w!=700) || (h!=700)){
+          glutReshapeWindow(700,700);
+          printf("вот он reshape\n");
+        }
+    printf("reshape\n");
+
 }
-void _mouseclick( int button, int state, int x, int y )
+void mouseclick( int button, int state, int x, int y )
 {
-    printf("%d %d \n",x,y);
+    printf("%d %d \n",x,y); 
 }
-#pragma pack(push, 2)
-typedef struct
-{ 
-  ushort    bfType;
-  uint   bfSize;        
-  ushort    bfReserved1; 
-  ushort   bfReserved2; 
-  uint   bfOffBits;    
-  uint  biSize; 
-  uint   biWidth; 
-  uint   biHeight; 
-  ushort   biBitCount; 
-  ushort  biCompression; 
-  uint  biSizeImage; 
-  uint   biXPelsPerMeter; 
-  uint   biYPelsPerMeter; 
-  uint  biClrUsed; 
-  uint  biClrImportant; 
-}HeadGr;
-#pragma pack(pop)
-char* readImg(char* fileName)
+
+char* readTexture(char* fileName)
 {
     int rgbBytes,d,bytesPerRow;
-    char *buf, *otherDate;
+    char *backgroundTexture, *otherDate;
     FILE *f;
     HeadGr head;
     f=fopen("texture.bmp","rb");
@@ -52,21 +33,19 @@ char* readImg(char* fileName)
         rgbBytes=head.biWidth*3;
         d=rgbBytes%4;
         bytesPerRow=d ? rgbBytes+(4-d)  :rgbBytes;
-        buf=(char*)malloc(bytesPerRow*head.biHeight);
+        backgroundTexture=(char*)malloc(bytesPerRow*head.biHeight);
         otherDate=(char*) malloc(head.bfOffBits-54);
         fread(otherDate,(head.bfOffBits-54),1,f);
-        fread(buf,bytesPerRow*head.biHeight,1,f);          
+        fread(backgroundTexture,bytesPerRow*head.biHeight,1,f);          
         fclose(f); 
         free(otherDate);
-        return buf;
+        return backgroundTexture;
     }
 }
 void display()
 {
-    char *buf;
     glClear(GL_COLOR_BUFFER_BIT);
-    buf=readImg("texture.bmp");
-    if(buf==NULL)
+    if(backgroundTexture==NULL)
     {
         glBegin(GL_QUADS);
             glColor3f(0.0, 1.0, 1.0);
@@ -79,14 +58,17 @@ void display()
     }
     else
     {
-        glDrawPixels(700, 700, GL_BGR, GL_UNSIGNED_BYTE, buf);
+        glDrawPixels(700, 700, GL_BGR, GL_UNSIGNED_BYTE, backgroundTexture);
         glutSwapBuffers();
     }
-    free(buf);
+    printf("display \n");
 }
- 
+
+
+
 int main (int argc, char * argv[])
 {
+        backgroundTexture=readTexture("texture.bmp");
         glutInit(&argc, argv);
         glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
        
@@ -95,9 +77,10 @@ int main (int argc, char * argv[])
        
         glutReshapeFunc(reshape);
         glutDisplayFunc(display);
-        glutMouseFunc( _mouseclick );
+        glutMouseFunc( 
+        mouseclick );
         glutMainLoop();
-       
+        free(backgroundTexture);
         return 0;
 }
 
