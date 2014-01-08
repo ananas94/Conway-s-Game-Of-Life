@@ -7,7 +7,7 @@ static char *lifeTexture;
 static char *lonelinessTexture;
 static char *overcrowdingTexture;
 static short field[35][35];
-static short nextField[35][35];
+static short numb[35][35];
 static short f=0;
 void reshape(int w, int h)
 {
@@ -109,31 +109,34 @@ void display()
 }
 void step(int value)
 {  
-  int i,j,k,g,numb;
+  int i,j,k,g;
   /*here must be rules*/
   if (f)
   {
-  for (i=0;i<35;i++)
-    for (j=0;j<35;j++)
-    {
-      numb=0;
-      for (k=-1;k<2;k++)
-        for (g=-1;g<2;g++)
-          if (k!=0 && g!=0 && field[i+k][j+g]==ALIVE)
-            numb++;
-      nextField[i][j]=field[i][j];
-      if (numb==2 && field[i][j]==ALIVE)
-        nextField[i][j]=ALIVE;
-      if (numb<2 && field[i][j]==ALIVE)
-        nextField[i][j]=DEAD_BY_LONELINESS;
-      if (numb>3 &&field[i][j]==ALIVE)
-        nextField[i][j]=DEAD_BY_OVERCROWDING;
-      if (numb==3)
-        nextField[i][j]=ALIVE;
-    }
+    for (i=0;i<35;i++)
+      for (j=0;j<35;j++)
+        numb[i][j]=0;
+    for (i=0;i<35;i++)
+      for (j=0;j<35;j++)
+      {
+        if (field[i][j]==ALIVE)
+          for (k=-1;k<2;k++)
+            for (g=-1;g<2;g++)
+              if (k!=0 || g!=0)
+                if ((i+k)>0 && (j+g)>0)
+                  numb[i+k][j+g]++;
+      }
   for (i=0;i<35;i++)
     for (j=0;j<35;j++)  
-      field[i][j]=nextField[i][j];
+    {
+      if (field[i][j]==ALIVE && numb[i][j]<2)
+        field[i][j]=DEAD_BY_LONELINESS;
+      if (field[i][j]==ALIVE && numb[i][j]>3)
+        field[i][j]=DEAD_BY_OVERCROWDING;
+      if (field[i][j]!=ALIVE && numb[i][j]==3)
+        field[i][j]=ALIVE;
+      //field[i][j]=nextField[i][j];
+    }
   }
   glutTimerFunc(1000,step,1);
 }
