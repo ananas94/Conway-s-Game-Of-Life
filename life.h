@@ -1,5 +1,5 @@
-#ifndef array
-#define array
+#ifndef H_life
+#define H_life
 
 
 #pragma pack(push, 2)
@@ -22,5 +22,9 @@ typedef struct
   uint  biClrImportant; 
 }HeadGr;
 #pragma pack(pop)
+
+ short ALIVE=1;
+ short DEAD_BY_LONELINESS=2;
+ short DEAD_BY_OVERCROWDING=3;
 
 #endif

@@ -6,7 +6,9 @@ static char *backgroundTexture;
 static char *lifeTexture;
 static char *lonelinessTexture;
 static char *overcrowdingTexture;
-static short field[35][32];
+static short field[35][35];
+static short nextField[35][35];
+static short f=0;
 void reshape(int w, int h)
 {
   //  printf("%d %d \n",w, h );  here's some bag... sometimes w!=699 or h!=699
@@ -14,26 +16,22 @@ void reshape(int w, int h)
     if ((w!=699) || (h!=699)){
           glutReshapeWindow(699,699);
         }
-                    glViewport(0, 0, 700, 700);
-           
+    glViewport(0, 0, 700, 700);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0, 700, 0, 700);
+    gluOrtho2D(0, 700, 700, 0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
 void mouseClick( int button, int state, int x, int y )
 {
-    printf("%d %d \n",x/20,y/20); 
-    if (button==GLUT_LEFT_BUTTON)
-    {
-      field[x/20][y/20]=ALIVE;
-    }
+      if ((x/20>=0 && x/20<35)&&(y/20>=0 && y/20<35))
+          field[x/20][y/20]=ALIVE;
 }
 void mouseMotion(int x, int y)
 {
-    field[x/20][y/20]=ALIVE;
-    printf("%d %d \n",x/20,y/20); 
+    if ((x/20>=0 && x/20<35)&&(y/20>=0 && y/20<35))
+      field[x/20][y/20]=ALIVE; 
 }
 char* readTexture(char* fileName, int alpha)
 {
@@ -61,57 +59,93 @@ char* readTexture(char* fileName, int alpha)
 }
 void display()
 {
-    int i,j;
-    glClear(GL_COLOR_BUFFER_BIT);
-    //background
-    if(backgroundTexture==NULL)
-    {
-        glBegin(GL_QUADS);
-            glColor3f(0.0, 1.0, 1.0);
-              glVertex2i(0, 0);
-              glVertex2i(699,0);
-              glVertex2i(699,699);
-              glVertex2i(0,699);
-        glEnd();
-    }
-    else
-    {
-        glDrawPixels(699, 699, GL_BGR, GL_UNSIGNED_BYTE, backgroundTexture);
-    }
-    //lines
-    for (i=0;i<70;i++)
-      {
-        glBegin(GL_LINES);
-          glColor3f(0.0, 0.0, 0.0);
-          glVertex2i(0,i*20);
-          glVertex2i(699,i*20);
-          glVertex2i(i*20,0);
-          glVertex2i(i*20,699);
-
-        glEnd();
-      }
-      for (i=0;i<35;i++)
-        for (j=0;j<32;j++)
-          if (field[i][j]==ALIVE)
-          {
-            glBegin(GL_QUADS);
-              glColor3f(1.0, 1.0, 1.0);
-              glVertex2i(i*20,700- j*20);
-              glVertex2i((i+1)*20,700-j*20);
-              glVertex2i((i+1)*20,700-(j+1)*20);
-              glVertex2i(i*20,700-(j+1)*20);
-            glEnd();
-
-          }
-
-
-    glutSwapBuffers();
+  int i,j;
+  glClear(GL_COLOR_BUFFER_BIT);
+  //background
+  if(backgroundTexture==NULL)
+  {
+    glBegin(GL_QUADS);
+      glColor3f(0.0, 1.0, 1.0);
+      glVertex2i(0, 0);
+      glVertex2i(699,0);
+      glVertex2i(699,699);
+      glVertex2i(0,699);
+    glEnd();
+  }
+  else
+  {
+    glDrawPixels(699, 699, GL_BGR, GL_UNSIGNED_BYTE, backgroundTexture);
+  }
+  //lines
+  for (i=0;i<70;i++)
+  {
+    glBegin(GL_LINES);
+      glColor3f(0.0, 0.0, 0.0);
+      glVertex2i(0,i*20);
+      glVertex2i(699,i*20);
+      glVertex2i(i*20,0);
+      glVertex2i(i*20,699);
+    glEnd();
+  }
+  //field
+  for (i=0;i<35;i++)
+    for (j=0;j<35;j++)
+      if (field[i][j])
+        {
+          glBegin(GL_QUADS);
+            if (field[i][j]==ALIVE)
+              glColor3f(0.0, 1.0, 0.0);
+            if (field[i][j]==DEAD_BY_LONELINESS)
+              glColor3f(0.0,0.0,0.0);
+            if (field[i][j]==DEAD_BY_OVERCROWDING)
+              glColor3f(1.0,0.0,0.0);
+            glVertex2i(i*20, j*20);
+            glVertex2i((i+1)*20,j*20);
+            glVertex2i((i+1)*20,(j+1)*20);
+            glVertex2i(i*20,(j+1)*20);
+          glEnd();
+        }
+  glutSwapBuffers();
 }
-void step(int value){
-  static int i=0;
- //here must be rules
-  display();
+void step(int value)
+{  
+  int i,j,k,g,numb;
+  /*here must be rules*/
+  if (f)
+  {
+  for (i=0;i<35;i++)
+    for (j=0;j<35;j++)
+    {
+      numb=0;
+      for (k=-1;k<2;k++)
+        for (g=-1;g<2;g++)
+          if (k!=0 && g!=0 && field[i+k][j+g]==ALIVE)
+            numb++;
+      nextField[i][j]=field[i][j];
+      if (numb==2 && field[i][j]==ALIVE)
+        nextField[i][j]=ALIVE;
+      if (numb<2 && field[i][j]==ALIVE)
+        nextField[i][j]=DEAD_BY_LONELINESS;
+      if (numb>3 &&field[i][j]==ALIVE)
+        nextField[i][j]=DEAD_BY_OVERCROWDING;
+      if (numb==3)
+        nextField[i][j]=ALIVE;
+    }
+  for (i=0;i<35;i++)
+    for (j=0;j<35;j++)  
+      field[i][j]=nextField[i][j];
+  }
   glutTimerFunc(1000,step,1);
+}
+void reDisplay(int value)
+{
+  display();
+  glutTimerFunc(30,reDisplay,2);
+}
+void keyboard(unsigned char key, int x, int y)
+{
+  if (key=' ')
+    f^=1;
 }
 int main (int argc, char * argv[])
 {
@@ -129,6 +163,8 @@ int main (int argc, char * argv[])
         glutMouseFunc(mouseClick);
         glutMotionFunc(mouseMotion);
         glutTimerFunc(1000,step,1);
+        glutTimerFunc(100,reDisplay,2);
+        glutKeyboardFunc(keyboard);
         glutMainLoop();
         free(backgroundTexture);
         return 0;
