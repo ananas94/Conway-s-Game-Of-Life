@@ -22,13 +22,13 @@ typedef struct
   uint  biClrImportant; 
 }HeadGr;
 #pragma pack(pop)
-#define cellSize 20
+#define cellSize 15
 #define ALIVE 1
 #define DEAD_BY_LONELINESS 2
 #define DEAD_BY_OVERCROWDING 3
-#define windowH 699
-#define windowW 699
-#define fieldH (windowH+1)/2
-#define fieldW (windowW+1)/2
+#define windowH 709
+#define windowW 899
+#define fieldH (windowH+1)/cellSize
+#define fieldW (windowW+1)/cellSize
 
 #endif

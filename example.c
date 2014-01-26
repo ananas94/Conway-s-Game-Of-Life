@@ -8,7 +8,8 @@ static char *lonelinessTexture;
 static char *overcrowdingTexture;
 static short field[fieldW][fieldH];
 static short numb[fieldW][fieldH];
-static short f=0;
+static short itWorks=0;
+static int stepTime=1000;
 void reshape(int w, int h)
 {
   //  printf("%d %d \n",w, h );  here's some bag... sometimes w!=699 or h!=699
@@ -27,7 +28,6 @@ void mouseClick( int button, int state, int x, int y )
 {
   if ((x/cellSize>=0 && x/cellSize<fieldW) && (y/cellSize>=0 && y/cellSize<fieldH))
     field[x/cellSize][y/cellSize]=ALIVE;
-  printf("%d\n",y/cellSize );
 }
 void mouseMotion(int x, int y)
 {
@@ -75,6 +75,12 @@ void display()
   }
   else
   {
+    glBegin(GL_QUADS);
+      glVertex2i(0, 0);
+      glVertex2i(windowW,0);
+      glVertex2i(windowW,windowH);
+      glVertex2i(0,windowH);
+    glEnd();
     glDrawPixels(windowW, windowH, GL_BGR, GL_UNSIGNED_BYTE, backgroundTexture);
   }
   //lines
@@ -108,12 +114,13 @@ void display()
             glVertex2i(i*cellSize,(j+1)*cellSize);
           glEnd();
         }
+
   glutSwapBuffers();
 }
 void step(int value)
 {  
   int i,j,k,g;
-  if (f)
+  if (itWorks)
   {
     for (i=0;i<fieldW;i++)
       for (j=0;j<fieldH;j++)
@@ -125,21 +132,21 @@ void step(int value)
           for (k=-1;k<2;k++)
             for (g=-1;g<2;g++)
               if (k!=0 || g!=0)
-                if ((i+k)>0 && (j+g)>0)
+                if ((i+k)>=0 && (j+g)>=0 &&(i+k)<fieldW && (j+g)<fieldH)
                   numb[i+k][j+g]++;
       }
-  for (i=0;i<fieldW;i++)
-    for (j=0;j<fieldH;j++)  
-    {
-      if (field[i][j]==ALIVE && numb[i][j]<2)
-        field[i][j]=DEAD_BY_LONELINESS;
-      if (field[i][j]==ALIVE && numb[i][j]>3)
-        field[i][j]=DEAD_BY_OVERCROWDING;
-      if (field[i][j]!=ALIVE && numb[i][j]==3)
-        field[i][j]=ALIVE;
-    }
+    for (i=0;i<fieldW;i++)
+      for (j=0;j<fieldH;j++)  
+      {
+        if (field[i][j]==ALIVE && numb[i][j]<2)
+          field[i][j]=DEAD_BY_LONELINESS;
+        if (field[i][j]==ALIVE && numb[i][j]>3)
+          field[i][j]=DEAD_BY_OVERCROWDING;
+        if (field[i][j]!=ALIVE && numb[i][j]==3)
+          field[i][j]=ALIVE;
+      } 
   }
-  glutTimerFunc(1000,step,1);
+  glutTimerFunc(stepTime,step,1);
 }
 void reDisplay(int value)
 {
@@ -149,7 +156,25 @@ void reDisplay(int value)
 void keyboard(unsigned char key, int x, int y)
 {
   if (key=' ')
-    f^=1;
+    itWorks^=1;
+}
+void funcKeys(int key, int x, int y)
+{
+  if (key==GLUT_KEY_DOWN)
+    stepTime+=20;
+  if (key==GLUT_KEY_UP)
+    stepTime-=20;
+  if (key==GLUT_KEY_F1)
+  {
+
+  }
+  if (key==GLUT_KEY_F9)
+  {
+    int i,j;
+    for (i=0;i<fieldW;i++)
+      for (j=0;j<fieldH;j++)
+        field[i][j]=0;
+  }
 }
 int main (int argc, char * argv[])
 {
@@ -169,6 +194,7 @@ int main (int argc, char * argv[])
   glutTimerFunc(1000,step,1);
   glutTimerFunc(100,reDisplay,2);
   glutKeyboardFunc(keyboard);
+  glutSpecialFunc(funcKeys);
   glutMainLoop();
   free(backgroundTexture);
   return 0;
