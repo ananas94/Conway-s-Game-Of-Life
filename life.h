@@ -26,9 +26,9 @@ typedef struct
 #define ALIVE 1
 #define DEAD_BY_LONELINESS 2
 #define DEAD_BY_OVERCROWDING 3
-#define windowH 709
-#define windowW 899
-#define fieldH (windowH+1)/cellSize
-#define fieldW (windowW+1)/cellSize
+#define windowH 500
+#define windowW 1024
+#define fieldH ((windowH+(cellSize-windowH%cellSize))/cellSize)
+#define fieldW ((windowW+(cellSize-windowW%cellSize))/cellSize)
 
 #endif

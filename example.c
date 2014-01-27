@@ -69,7 +69,7 @@ void display()
   int i,j;
   glClear(GL_COLOR_BUFFER_BIT);
   //background
-  if(backgroundImg==NULL)
+ /* if(backgroundImg==NULL)
   {
     glBegin(GL_QUADS);
       glColor3f(0.0, 1.0, 1.0);
@@ -79,23 +79,18 @@ void display()
       glVertex2i(0,windowH);
     glEnd();
   }
-  else
+  else*/
   {
-     glEnable(GL_TEXTURE_2D);
     glBindTexture(GL_TEXTURE_2D, backgroundTexture );
     glBegin(GL_QUADS);
       glColor3f(1.0, 1.0, 1.0);
-
-      glTexCoord2d(0,0);
-      glVertex2i(0, 0);
-      glTexCoord2d(0,1);
-      glVertex2i(windowW,0);
-      glTexCoord2d(1,1); 
-      glVertex2i(windowW,windowH);
-      glTexCoord2d(1,0); 
-      glVertex2i(0,windowH);
+      glTexCoord2d(0,0); glVertex2i(0, 0);      
+      glTexCoord2d(0,1); glVertex2i(windowW,0);     
+      glTexCoord2d(1,1); glVertex2i(windowW,windowH);        
+      glTexCoord2d(1,0); glVertex2i(0,windowH);          
     glEnd();
-    //glDrawPixels(windowW, windowH, GL_BGR, GL_UNSIGNED_BYTE, backgroundImg);
+//    glDisable(GL_TEXTURE_2D);
+   // glDrawPixels(windowW, windowH, GL_BGR, GL_UNSIGNED_BYTE, backgroundImg);
   }
   //lines
   for (i=0;i<fieldH;i++)
@@ -136,6 +131,7 @@ for (i=0;i<fieldW;i++)
 
   glutSwapBuffers();
 }
+
 void step(int value)
 {  
   int i,j,k,g;
@@ -167,6 +163,7 @@ void step(int value)
   }
   glutTimerFunc(stepTime,step,1);
 }
+
 void reDisplay(int value)
 {
   display();
@@ -201,15 +198,23 @@ int main (int argc, char * argv[])
   overcrowdingImg=readImg("overcrowding.bmp",1);
   lifeImg=readImg("life.bmp",1);
   lonelinessImg=readImg("loneliness.bmp",1);
-  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-
   glGenTextures(1, &backgroundTexture);
   glBindTexture(GL_TEXTURE_2D, backgroundTexture);
-  
-  glTexImage2D(GL_TEXTURE_2D, 0, 3,512,512,0,GL_BGR,GL_UNSIGNED_BYTE,backgroundImg);
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+  printf("ololo crash\n");
+  printf("%X\n",*backgroundImg);
+  gluBuild2DMipmaps(GL_TEXTURE_2D, 3,1024,1024,GL_RGB8,GL_UNSIGNED_BYTE,backgroundImg);
+  printf("ololo J_J crash\n");
+  glEnable(GL_TEXTURE_2D);
+
+  free(backgroundImg);
+
+
+
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
@@ -224,6 +229,5 @@ int main (int argc, char * argv[])
   glutKeyboardFunc(keyboard);
   glutSpecialFunc(funcKeys);
   glutMainLoop();
-  free(backgroundImg);
   return 0;
 }
