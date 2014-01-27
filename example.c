@@ -1,18 +1,24 @@
 
-#include <GL/glut.h>    
+#include <GL/glut.h>  
+#include <GL/gl.h>
+#include <GL/glu.h> 
 #include <stdio.h>
 #include "life.h"
-static char *backgroundTexture;
-static char *lifeTexture;
-static char *lonelinessTexture;
-static char *overcrowdingTexture;
+static char *backgroundImg;
+static unsigned int backgroundTexture;
+static char *lifeImg;
+static unsigned int lifeTexture;
+static char *lonelinessImg;
+static unsigned int lonelinessTexture;
+static char *overcrowdingImg;
+static unsigned int overcrowdingTexture;
 static short field[fieldW][fieldH];
 static short numb[fieldW][fieldH];
 static short itWorks=0;
 static int stepTime=1000;
 void reshape(int w, int h)
 {
-  //  printf("%d %d \n",w, h );  here's some bag... sometimes w!=699 or h!=699
+  //  here's some bag... sometimes w!=699 or h!=699
   // but glutReshpeWindow don't change window size
     if ((w!=windowW) || (h!=windowH)){
           glutReshapeWindow(windowW,windowH);
@@ -34,10 +40,10 @@ void mouseMotion(int x, int y)
   if ((x/cellSize>=0 && x/cellSize<fieldW) && (y/cellSize>=0 && y/cellSize<fieldH))
    field[x/cellSize][y/cellSize]=ALIVE; 
 }
-char* readTexture(char* fileName, int alpha)
+char* readImg(char* fileName, int alpha)
 {
   int rgbBytes,d,bytesPerRow;
-  char *backgroundTexture, *otherDate;
+  char *backgroundImg, *otherDate;
   FILE *f;
   HeadGr head;
   f=fopen(fileName,"rb");
@@ -49,13 +55,13 @@ char* readTexture(char* fileName, int alpha)
     rgbBytes=head.biWidth*(3+alpha);
     d=rgbBytes%4;
     bytesPerRow=d ? rgbBytes+(4-d)  :rgbBytes;
-    backgroundTexture=(char*)malloc(bytesPerRow*head.biHeight);
+    backgroundImg=(char*)malloc(bytesPerRow*head.biHeight);
     otherDate=(char*) malloc(head.bfOffBits-54);
     fread(otherDate,(head.bfOffBits-54),1,f);
-    fread(backgroundTexture,bytesPerRow*head.biHeight,1,f);          
+    fread(backgroundImg,bytesPerRow*head.biHeight,1,f);          
     fclose(f); 
     free(otherDate);
-    return backgroundTexture;
+    return backgroundImg;
   }
 }
 void display()
@@ -63,7 +69,7 @@ void display()
   int i,j;
   glClear(GL_COLOR_BUFFER_BIT);
   //background
-  if(backgroundTexture==NULL)
+  if(backgroundImg==NULL)
   {
     glBegin(GL_QUADS);
       glColor3f(0.0, 1.0, 1.0);
@@ -75,27 +81,40 @@ void display()
   }
   else
   {
+     glEnable(GL_TEXTURE_2D);
+    glBindTexture(GL_TEXTURE_2D, backgroundTexture );
     glBegin(GL_QUADS);
+      glColor3f(1.0, 1.0, 1.0);
+
+      glTexCoord2d(0,0);
       glVertex2i(0, 0);
+      glTexCoord2d(0,1);
       glVertex2i(windowW,0);
+      glTexCoord2d(1,1); 
       glVertex2i(windowW,windowH);
+      glTexCoord2d(1,0); 
       glVertex2i(0,windowH);
     glEnd();
-    glDrawPixels(windowW, windowH, GL_BGR, GL_UNSIGNED_BYTE, backgroundTexture);
+    //glDrawPixels(windowW, windowH, GL_BGR, GL_UNSIGNED_BYTE, backgroundImg);
   }
   //lines
-  for (i=0;i<70;i++)
+  for (i=0;i<fieldH;i++)
   {
     glBegin(GL_LINES);
       glColor3f(0.0, 0.0, 0.0);
-
       glVertex2i(0,i*cellSize);
       glVertex2i(windowW,i*cellSize);
-
+    glEnd();
+  }
+for (i=0;i<fieldW;i++)
+  {
+    glBegin(GL_LINES);
+      glColor3f(0.0, 0.0, 0.0);
       glVertex2i(i*cellSize,0);
       glVertex2i(i*cellSize,windowH);
     glEnd();
   }
+
   //field
   for (i=0;i<fieldW;i++)
     for (j=0;j<fieldH;j++)
@@ -161,9 +180,9 @@ void keyboard(unsigned char key, int x, int y)
 void funcKeys(int key, int x, int y)
 {
   if (key==GLUT_KEY_DOWN)
-    stepTime+=20;
+    if (stepTime<5000) stepTime+=20;
   if (key==GLUT_KEY_UP)
-    stepTime-=20;
+    if (stepTime>200) stepTime-=20;
   if (key==GLUT_KEY_F1)
   {
 
@@ -178,10 +197,19 @@ void funcKeys(int key, int x, int y)
 }
 int main (int argc, char * argv[])
 {
-  backgroundTexture=readTexture("backgroundTexture.bmp",0);
-  overcrowdingTexture=readTexture("overcrowding.bmp",1);
-  lifeTexture=readTexture("life.bmp",1);
-  lonelinessTexture=readTexture("loneliness.bmp",1);
+  backgroundImg=readImg("backgroundTexture.bmp",0);
+  overcrowdingImg=readImg("overcrowding.bmp",1);
+  lifeImg=readImg("life.bmp",1);
+  lonelinessImg=readImg("loneliness.bmp",1);
+  glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+
+  glGenTextures(1, &backgroundTexture);
+  glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+  
+  glTexImage2D(GL_TEXTURE_2D, 0, 3,512,512,0,GL_BGR,GL_UNSIGNED_BYTE,backgroundImg);
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+   glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
@@ -196,6 +224,6 @@ int main (int argc, char * argv[])
   glutKeyboardFunc(keyboard);
   glutSpecialFunc(funcKeys);
   glutMainLoop();
-  free(backgroundTexture);
+  free(backgroundImg);
   return 0;
 }
