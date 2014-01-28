@@ -41,29 +41,38 @@ void mouseMotion(int x, int y)
 void display()
 {
   int i,j;
-  glClear(GL_COLOR_BUFFER_BIT);
-  //background
- /* if(backgroundImg==NULL)
+  static short a=1;
+  if (a)
   {
-    glBegin(GL_QUADS);
-      glVertex2i(0, 0);
-      glVertex2i(windowW,0);
-      glVertex2i(windowW,windowH);
-      glVertex2i(0,windowH);
-    glEnd();
+    glEnable(GL_TEXTURE_2D);
+    glGenTextures(1, &backgroundTexture);
+    printf("%d\n", backgroundTexture );
+    glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+    glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+    glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+    glTexImage2D(GL_TEXTURE_2D,0, GL_RGB8,background.width,background.height,0,GL_RGB,GL_UNSIGNED_BYTE,background.pixel_data);
+    printf("%s\n",gluErrorString(glGetError()) );
+    a=0;
   }
-  else*/
-  { 
-    glBindTexture(GL_TEXTURE_2D, backgroundTexture );
+
+
+
+
+
+  glClear(GL_COLOR_BUFFER_BIT);
+  glBindTexture(GL_TEXTURE_2D, backgroundTexture );
     glBegin(GL_QUADS);
       glColor3f(0.0, 1.0, 1.0);
       glTexCoord2d(0,0); glVertex2i(0, 0);      
       glTexCoord2d(0,1); glVertex2i(windowW,0);     
-      glTexCoord2d(1,1); glVertex2i(windowW,80);        
+      glTexCoord2d(1,1); glVertex2i(windowW,windowH);        
       glTexCoord2d(1,0); glVertex2i(0,windowH);          
     glEnd();
-//  glDrawPixels(windowW, windowH, GL_RGB, GL_UNSIGNED_BYTE, background.pixel_data);
-  }
+    //glDrawPixels(windowW, windowH, GL_RGB, GL_UNSIGNED_BYTE, background.pixel_data);
+
   //lines
   for (i=0;i<fieldH;i++)
   {
@@ -179,28 +188,6 @@ int main (int argc, char * argv[])
   glutTimerFunc(100,reDisplay,2);
   glutKeyboardFunc(keyboard);
   glutSpecialFunc(funcKeys);
-
-  glEnable(GL_TEXTURE_2D);
-  glGenTextures(1, &backgroundTexture);
-  printf("%d\n", backgroundTexture );
-  glBindTexture(GL_TEXTURE_2D, backgroundTexture);
-  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-  glTexImage2D(GL_TEXTURE_2D,0, 3,background.width,background.height,0,GL_RGB8,GL_UNSIGNED_BYTE,background.pixel_data);
-  printf("%s\n",gluErrorString(glGetError()) );
-
- /* glGenTextures(1, &lifeTexture);
-  printf("%d\n", lifeTexture );
-  glBindTexture(GL_TEXTURE_2D, lifeTexture);
-  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-  glTexImage2D(GL_TEXTURE_2D,0, 3,16,16,0,GL_RGB8,GL_UNSIGNED_BYTE,lifeImg);*/
 
 
   glutMainLoop();

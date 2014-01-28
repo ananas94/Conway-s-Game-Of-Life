@@ -6,9 +6,9 @@
 #define ALIVE 1
 #define DEAD_BY_LONELINESS 2
 #define DEAD_BY_OVERCROWDING 3
-#define windowH 500
-#define windowW 1024
-#define fieldH ((windowH+(cellSize-windowH%cellSize))/cellSize)
-#define fieldW ((windowW+(cellSize-windowW%cellSize))/cellSize)
+#define fieldH 40
+#define fieldW 80
 
+#define windowH fieldH*cellSize
+#define windowW fieldW*cellSize
 #endif
