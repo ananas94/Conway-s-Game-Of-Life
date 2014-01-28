@@ -38,32 +38,46 @@ void mouseMotion(int x, int y)
   if ((x/cellSize>=0 && x/cellSize<fieldW) && (y/cellSize>=0 && y/cellSize<fieldH))
    field[x/cellSize][y/cellSize]=ALIVE; 
 }
+int initTexture(struct Texture tex)
+{
+  int textureNum;
+  glGenTextures(1, &textureNum);
+  glBindTexture(GL_TEXTURE_2D, textureNum);
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+  glTexImage2D(GL_TEXTURE_2D,0, GL_RGBA,tex.width,tex.height,0, (tex.bytes_per_pixel==3 ? GL_RGB : GL_RGBA   ),GL_UNSIGNED_BYTE,tex.pixel_data);
+  return textureNum;
+}
 void display()
 {
   int i,j;
-  glClear(GL_COLOR_BUFFER_BIT);
-  //background
- /* if(backgroundImg==NULL)
+  static short texturesNotInit=1;
+  if (texturesNotInit)
   {
-    glBegin(GL_QUADS);
-      glVertex2i(0, 0);
-      glVertex2i(windowW,0);
-      glVertex2i(windowW,windowH);
-      glVertex2i(0,windowH);
-    glEnd();
+    glEnable(GL_TEXTURE_2D);
+    backgroundTexture=initTexture(background);
+    lifeTexture=initTexture(life);
+    lonelinessTexture=initTexture(loneliness);
+    overcrowdingTexture=initTexture(overcrowding);
+    texturesNotInit=0;
   }
-  else*/
-  { 
-    glBindTexture(GL_TEXTURE_2D, backgroundTexture );
+
+//background
+  glClear(GL_COLOR_BUFFER_BIT);
+
+  glBindTexture(GL_TEXTURE_2D, backgroundTexture );
     glBegin(GL_QUADS);
-      glColor3f(0.0, 1.0, 1.0);
+      glColor3f(1.0, 1.0, 1.0);
       glTexCoord2d(0,0); glVertex2i(0, 0);      
       glTexCoord2d(0,1); glVertex2i(windowW,0);     
-      glTexCoord2d(1,1); glVertex2i(windowW,80);        
+      glTexCoord2d(1,1); glVertex2i(windowW,windowH);        
       glTexCoord2d(1,0); glVertex2i(0,windowH);          
     glEnd();
-//  glDrawPixels(windowW, windowH, GL_RGB, GL_UNSIGNED_BYTE, background.pixel_data);
-  }
+    //glDrawPixels(windowW, windowH, GL_RGB, GL_UNSIGNED_BYTE, background.pixel_data);
+
   //lines
   for (i=0;i<fieldH;i++)
   {
@@ -88,16 +102,17 @@ for (i=0;i<fieldW;i++)
       if (field[i][j])
         {
           glBegin(GL_QUADS);
+            glColor3f(1.0, 1.0, 1.0);
             if (field[i][j]==ALIVE)
-              glColor3f(0.0, 1.0, 0.0);
+              glBindTexture(GL_TEXTURE_2D, lifeTexture );
             if (field[i][j]==DEAD_BY_LONELINESS)
-              glColor3f(0.0,0.0,0.0);
+                glBindTexture(GL_TEXTURE_2D, lonelinessTexture );
             if (field[i][j]==DEAD_BY_OVERCROWDING)
-              glColor3f(1.0,0.0,0.0);
-            glVertex2i(i*cellSize, j*cellSize);
-            glVertex2i((i+1)*cellSize,j*cellSize);
-            glVertex2i((i+1)*cellSize,(j+1)*cellSize);
-            glVertex2i(i*cellSize,(j+1)*cellSize);
+                glBindTexture(GL_TEXTURE_2D, overcrowdingTexture );
+           glTexCoord2d(0,0); glVertex2i(i*cellSize, j*cellSize);
+           glTexCoord2d(0,1); glVertex2i((i+1)*cellSize,j*cellSize);
+           glTexCoord2d(1,1); glVertex2i((i+1)*cellSize,(j+1)*cellSize);
+           glTexCoord2d(1,0); glVertex2i(i*cellSize,(j+1)*cellSize);
           glEnd();
         }
 
@@ -179,29 +194,6 @@ int main (int argc, char * argv[])
   glutTimerFunc(100,reDisplay,2);
   glutKeyboardFunc(keyboard);
   glutSpecialFunc(funcKeys);
-
-  glEnable(GL_TEXTURE_2D);
-  glGenTextures(1, &backgroundTexture);
-  printf("%d\n", backgroundTexture );
-  glBindTexture(GL_TEXTURE_2D, backgroundTexture);
-  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-  glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-  glTexImage2D(GL_TEXTURE_2D,0, 3,background.width,background.height,0,GL_RGB8,GL_UNSIGNED_BYTE,background.pixel_data);
-  printf("%s\n",gluErrorString(glGetError()) );
-
- /* glGenTextures(1, &lifeTexture);
-  printf("%d\n", lifeTexture );
-  glBindTexture(GL_TEXTURE_2D, lifeTexture);
-  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-  glTexImage2D(GL_TEXTURE_2D,0, 3,16,16,0,GL_RGB8,GL_UNSIGNED_BYTE,lifeImg);*/
-
 
   glutMainLoop();
   return 0;
