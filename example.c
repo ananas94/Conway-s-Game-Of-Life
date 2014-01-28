@@ -74,7 +74,6 @@ void display()
     overcrowdingTexture=initTexture(overcrowding);
    // printf("%X %X\n",glGetError(),overcrowdingTexture);
     texturesNotInit=0;
-
   }
 
 //background
@@ -89,7 +88,29 @@ void display()
       glTexCoord2d(1,0); glVertex2i(0,windowH);          
     glEnd();
     //glDrawPixels(windowW, windowH, GL_RGB, GL_UNSIGNED_BYTE, background.pixel_data);
+          glEnable(GL_BLEND);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
+ //field
+  for (i=0;i<fieldW;i++)
+    for (j=0;j<fieldH;j++)
+      if (field[i][j])
+        {
+          glColor4f(1.0, 1.0, 1.0,1.0);
+          if (field[i][j]==ALIVE)
+              glBindTexture(GL_TEXTURE_2D, lifeTexture );
+          if (field[i][j]==DEAD_BY_LONELINESS)
+                glBindTexture(GL_TEXTURE_2D, lonelinessTexture );
+          if (field[i][j]==DEAD_BY_OVERCROWDING)
+                glBindTexture(GL_TEXTURE_2D, overcrowdingTexture );
+          glBegin(GL_QUADS);
+           glTexCoord2d(0,0); glVertex2i(i*cellSize, j*cellSize);
+           glTexCoord2d(0,1); glVertex2i((i+1)*cellSize,j*cellSize);
+           glTexCoord2d(1,1); glVertex2i((i+1)*cellSize,(j+1)*cellSize);
+           glTexCoord2d(1,0); glVertex2i(i*cellSize,(j+1)*cellSize);
+          glEnd();
+        }
+        glDisable(GL_BLEND);
   //lines
   for (i=0;i<fieldH;i++)
   {
@@ -107,25 +128,7 @@ for (i=0;i<fieldW;i++)
       glVertex2i(i*cellSize,windowH);
     glEnd();
   }
-  //field
-  for (i=0;i<fieldW;i++)
-    for (j=0;j<fieldH;j++)
-      if (field[i][j])
-        {
-          glColor4f(1.0, 1.0, 1.0,0.0);
-          if (field[i][j]==ALIVE)
-              glBindTexture(GL_TEXTURE_2D, lifeTexture );
-          if (field[i][j]==DEAD_BY_LONELINESS)
-                glBindTexture(GL_TEXTURE_2D, lonelinessTexture );
-          if (field[i][j]==DEAD_BY_OVERCROWDING)
-                glBindTexture(GL_TEXTURE_2D, overcrowdingTexture );
-          glBegin(GL_QUADS);
-           glTexCoord2d(0,0); glVertex2i(i*cellSize, j*cellSize);
-           glTexCoord2d(0,1); glVertex2i((i+1)*cellSize,j*cellSize);
-           glTexCoord2d(1,1); glVertex2i((i+1)*cellSize,(j+1)*cellSize);
-           glTexCoord2d(1,0); glVertex2i(i*cellSize,(j+1)*cellSize);
-          glEnd();
-        }
+ 
 
   glutSwapBuffers();
 }
