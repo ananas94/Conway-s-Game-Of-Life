@@ -47,8 +47,14 @@ int initTexture(struct Texture tex)
   glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-  glTexImage2D(GL_TEXTURE_2D,0, GL_RGBA,tex.width,tex.height,0, (tex.bytes_per_pixel==3 ? GL_RGB : GL_RGBA   ),GL_UNSIGNED_BYTE,tex.pixel_data);
+  glTexImage2D(GL_TEXTURE_2D,0, GL_RGBA,
+                tex.width,
+                tex.height,
+                0,
+                (tex.bytes_per_pixel==3 ? GL_RGB : GL_RGBA),
+                GL_UNSIGNED_BYTE,tex.pixel_data);
   return textureNum;
 }
 void display()
@@ -59,10 +65,15 @@ void display()
   {
     glEnable(GL_TEXTURE_2D);
     backgroundTexture=initTexture(background);
+    printf("%X %X\n",glGetError(),backgroundTexture);
     lifeTexture=initTexture(life);
+    printf("%X %X\n",glGetError(),lifeTexture);
     lonelinessTexture=initTexture(loneliness);
+    printf("%X %X\n",glGetError(),lonelinessTexture);
     overcrowdingTexture=initTexture(overcrowding);
+    printf("%X %X\n",glGetError(),overcrowdingTexture);
     texturesNotInit=0;
+
   }
 
 //background
@@ -95,20 +106,19 @@ for (i=0;i<fieldW;i++)
       glVertex2i(i*cellSize,windowH);
     glEnd();
   }
-
   //field
   for (i=0;i<fieldW;i++)
     for (j=0;j<fieldH;j++)
       if (field[i][j])
         {
-          glBegin(GL_QUADS);
-            glColor3f(1.0, 1.0, 1.0);
-            if (field[i][j]==ALIVE)
+          if (field[i][j]==ALIVE)
               glBindTexture(GL_TEXTURE_2D, lifeTexture );
-            if (field[i][j]==DEAD_BY_LONELINESS)
+          if (field[i][j]==DEAD_BY_LONELINESS)
                 glBindTexture(GL_TEXTURE_2D, lonelinessTexture );
-            if (field[i][j]==DEAD_BY_OVERCROWDING)
+          if (field[i][j]==DEAD_BY_OVERCROWDING)
                 glBindTexture(GL_TEXTURE_2D, overcrowdingTexture );
+          glBegin(GL_QUADS);
+           glColor3f(1.0, 1.0, 1.0);
            glTexCoord2d(0,0); glVertex2i(i*cellSize, j*cellSize);
            glTexCoord2d(0,1); glVertex2i((i+1)*cellSize,j*cellSize);
            glTexCoord2d(1,1); glVertex2i((i+1)*cellSize,(j+1)*cellSize);
