@@ -21,10 +21,10 @@ void reshape(int w, int h)
     if ((w!=windowW) || (h!=windowH)){
           glutReshapeWindow(windowW,windowH);
         }
-    glViewport(0, 0, windowW+1, windowH+1);
+    glViewport(0, 0, windowW, windowH);
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
-    gluOrtho2D(0, windowW+1, windowH+1, 0);
+    gluOrtho2D(0, windowW, windowH, 0);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 }
@@ -47,7 +47,8 @@ int initTexture(struct Texture tex)
   glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-  glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+
+  //glTexEnvi(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
   glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
   glTexImage2D(GL_TEXTURE_2D,0, GL_RGBA,
                 tex.width,
@@ -65,13 +66,13 @@ void display()
   {
     glEnable(GL_TEXTURE_2D);
     backgroundTexture=initTexture(background);
-    printf("%X %X\n",glGetError(),backgroundTexture);
+   // printf("%X %X\n",glGetError(),backgroundTexture);
     lifeTexture=initTexture(life);
-    printf("%X %X\n",glGetError(),lifeTexture);
+   // printf("%X %X\n",glGetError(),lifeTexture);
     lonelinessTexture=initTexture(loneliness);
-    printf("%X %X\n",glGetError(),lonelinessTexture);
+   // printf("%X %X\n",glGetError(),lonelinessTexture);
     overcrowdingTexture=initTexture(overcrowding);
-    printf("%X %X\n",glGetError(),overcrowdingTexture);
+   // printf("%X %X\n",glGetError(),overcrowdingTexture);
     texturesNotInit=0;
 
   }
@@ -111,6 +112,7 @@ for (i=0;i<fieldW;i++)
     for (j=0;j<fieldH;j++)
       if (field[i][j])
         {
+          glColor4f(1.0, 1.0, 1.0,0.0);
           if (field[i][j]==ALIVE)
               glBindTexture(GL_TEXTURE_2D, lifeTexture );
           if (field[i][j]==DEAD_BY_LONELINESS)
@@ -118,7 +120,6 @@ for (i=0;i<fieldW;i++)
           if (field[i][j]==DEAD_BY_OVERCROWDING)
                 glBindTexture(GL_TEXTURE_2D, overcrowdingTexture );
           glBegin(GL_QUADS);
-           glColor3f(1.0, 1.0, 1.0);
            glTexCoord2d(0,0); glVertex2i(i*cellSize, j*cellSize);
            glTexCoord2d(0,1); glVertex2i((i+1)*cellSize,j*cellSize);
            glTexCoord2d(1,1); glVertex2i((i+1)*cellSize,(j+1)*cellSize);
