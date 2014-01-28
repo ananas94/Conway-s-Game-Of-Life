@@ -14,6 +14,7 @@ static short numb[fieldW][fieldH];
 static short itWorks=0;
 static int stepTime=1000;
 static int mouseButton;
+static int drawDead=1;
 
 void reshape(int w, int h)
 {
@@ -88,10 +89,13 @@ void display()
             glColor4f(1.0, 1.0, 1.0,1.0);
             if (field[i][j]==ALIVE)
                 glBindTexture(GL_TEXTURE_2D, lifeTexture );
-            if (field[i][j]==DEAD_BY_LONELINESS)
+            else
+              if (field[i][j]==0 || !drawDead)
+                continue;
+            if (field[i][j]==DEAD_BY_LONELINESS && drawDead)
                 glBindTexture(GL_TEXTURE_2D, lonelinessTexture );
-            if (field[i][j]==DEAD_BY_OVERCROWDING)
-                glBindTexture(GL_TEXTURE_2D, overcrowdingTexture );
+            if (field[i][j]==DEAD_BY_OVERCROWDING  && drawDead)
+                glBindTexture(GL_TEXTURE_2D, overcrowdingTexture);
             glBegin(GL_QUADS);
               glTexCoord2d(0,0); glVertex2i(i*cellSize, j*cellSize);
               glTexCoord2d(0,1); glVertex2i((i+1)*cellSize,j*cellSize);
@@ -176,6 +180,8 @@ void funcKeys(int key, int x, int y)
     //here may be help
     //or youre ads ^_^
   }
+  if (key==GLUT_KEY_F2)
+    drawDead^=1;
   if (key==GLUT_KEY_F9)
   {
     int i,j;

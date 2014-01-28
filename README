@@ -1,6 +1,9 @@
 Help:
 
+mouse left button-make life in cell
+mouse right button-clear cell
 space-start steps
-F9-clean field
+F2-show/hide dead cells
 ↑-increase speed
 ↓-decrease speed
+F9-clean field
