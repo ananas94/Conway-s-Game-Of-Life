@@ -4,18 +4,16 @@
 #include <GL/glu.h> 
 #include <stdio.h>
 #include "life.h"
-static char *backgroundImg;
+#include "Textures.h"
 static unsigned int backgroundTexture;
-static char *lifeImg;
 static unsigned int lifeTexture;
-static char *lonelinessImg;
 static unsigned int lonelinessTexture;
-static char *overcrowdingImg;
 static unsigned int overcrowdingTexture;
 static short field[fieldW][fieldH];
 static short numb[fieldW][fieldH];
 static short itWorks=0;
 static int stepTime=1000;
+
 void reshape(int w, int h)
 {
   //  here's some bag... sometimes w!=699 or h!=699
@@ -40,30 +38,6 @@ void mouseMotion(int x, int y)
   if ((x/cellSize>=0 && x/cellSize<fieldW) && (y/cellSize>=0 && y/cellSize<fieldH))
    field[x/cellSize][y/cellSize]=ALIVE; 
 }
-char* readImg(char* fileName, int alpha)
-{
-  int rgbBytes,d,bytesPerRow;
-  char *backgroundImg, *otherDate;
-  FILE *f;
-  HeadGr head;
-  f=fopen(fileName,"rb");
-  if (f==NULL)
-      return NULL;
-  else
-  {
-    fread(&head,54,1,f);
-    rgbBytes=head.biWidth*(3+alpha);
-    d=rgbBytes%4;
-    bytesPerRow=d ? rgbBytes+(4-d)  :rgbBytes;
-    backgroundImg=(char*)malloc(bytesPerRow*head.biHeight);
-    otherDate=(char*) malloc(head.bfOffBits-54);
-    fread(otherDate,(head.bfOffBits-54),1,f);
-    fread(backgroundImg,bytesPerRow*head.biHeight,1,f);          
-    fclose(f); 
-    free(otherDate);
-    return backgroundImg;
-  }
-}
 void display()
 {
   int i,j;
@@ -72,7 +46,6 @@ void display()
  /* if(backgroundImg==NULL)
   {
     glBegin(GL_QUADS);
-      glColor3f(0.0, 1.0, 1.0);
       glVertex2i(0, 0);
       glVertex2i(windowW,0);
       glVertex2i(windowW,windowH);
@@ -80,17 +53,16 @@ void display()
     glEnd();
   }
   else*/
-  {
+  { 
     glBindTexture(GL_TEXTURE_2D, backgroundTexture );
     glBegin(GL_QUADS);
-      glColor3f(1.0, 1.0, 1.0);
+      glColor3f(0.0, 1.0, 1.0);
       glTexCoord2d(0,0); glVertex2i(0, 0);      
       glTexCoord2d(0,1); glVertex2i(windowW,0);     
-      glTexCoord2d(1,1); glVertex2i(windowW,windowH);        
+      glTexCoord2d(1,1); glVertex2i(windowW,80);        
       glTexCoord2d(1,0); glVertex2i(0,windowH);          
     glEnd();
-//    glDisable(GL_TEXTURE_2D);
-   // glDrawPixels(windowW, windowH, GL_BGR, GL_UNSIGNED_BYTE, backgroundImg);
+//  glDrawPixels(windowW, windowH, GL_RGB, GL_UNSIGNED_BYTE, background.pixel_data);
   }
   //lines
   for (i=0;i<fieldH;i++)
@@ -194,27 +166,6 @@ void funcKeys(int key, int x, int y)
 }
 int main (int argc, char * argv[])
 {
-  backgroundImg=readImg("backgroundTexture.bmp",0);
-  overcrowdingImg=readImg("overcrowding.bmp",1);
-  lifeImg=readImg("life.bmp",1);
-  lonelinessImg=readImg("loneliness.bmp",1);
-  glGenTextures(1, &backgroundTexture);
-  glBindTexture(GL_TEXTURE_2D, backgroundTexture);
-  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
-  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
-  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
-  printf("ololo crash\n");
-  printf("%X\n",*backgroundImg);
-  gluBuild2DMipmaps(GL_TEXTURE_2D, 3,1024,1024,GL_RGB8,GL_UNSIGNED_BYTE,backgroundImg);
-  printf("ololo J_J crash\n");
-  glEnable(GL_TEXTURE_2D);
-
-  free(backgroundImg);
-
-
-
 
   glutInit(&argc, argv);
   glutInitDisplayMode(GLUT_DOUBLE|GLUT_RGBA);
@@ -228,6 +179,30 @@ int main (int argc, char * argv[])
   glutTimerFunc(100,reDisplay,2);
   glutKeyboardFunc(keyboard);
   glutSpecialFunc(funcKeys);
+
+  glEnable(GL_TEXTURE_2D);
+  glGenTextures(1, &backgroundTexture);
+  printf("%d\n", backgroundTexture );
+  glBindTexture(GL_TEXTURE_2D, backgroundTexture);
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+  glTexParameterf(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+  glTexImage2D(GL_TEXTURE_2D,0, 3,background.width,background.height,0,GL_RGB8,GL_UNSIGNED_BYTE,background.pixel_data);
+  printf("%s\n",gluErrorString(glGetError()) );
+
+ /* glGenTextures(1, &lifeTexture);
+  printf("%d\n", lifeTexture );
+  glBindTexture(GL_TEXTURE_2D, lifeTexture);
+  glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_LINEAR);
+  glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_LINEAR);
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT );
+  glTexParameterf( GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT );
+  glTexImage2D(GL_TEXTURE_2D,0, 3,16,16,0,GL_RGB8,GL_UNSIGNED_BYTE,lifeImg);*/
+
+
   glutMainLoop();
   return 0;
 }
