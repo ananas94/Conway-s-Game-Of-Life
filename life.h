@@ -18,6 +18,27 @@ typedef struct Texture
   unsigned char  *pixel_data;
 }TEXTURE;
 
+#pragma pack(push, 2)
+typedef struct
+{
+  unsigned short bfType;
+  unsigned int bfSize;
+  unsigned short bfReserved1;
+  unsigned short bfReserved2;
+  unsigned int bfOffBits;
+  unsigned int biSize;
+  unsigned int biWidth;
+  unsigned int biHeight;
+  unsigned short biBitCount;
+  unsigned short biCompression;
+  unsigned int biSizeImage;
+  unsigned int biXPelsPerMeter;
+  unsigned int biYPelsPerMeter;
+  unsigned int biClrUsed;
+  unsigned int biClrImportant;
+}HeadGr;
+#pragma pack(pop)
+
 //graphics
 extern int initTexture(struct Texture tex);
 extern void reshape(int w, int h);

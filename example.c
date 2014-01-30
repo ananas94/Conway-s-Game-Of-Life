@@ -4,6 +4,11 @@
 #include <GL/glu.h> 
 #include <stdio.h>
 #include "life.h"
+
+//here was dirty hack
+//this header file have 127k+ lines
+//and it was bitmap
+//#include "Textures.h"
 #include "Textures.h"
 static unsigned int backgroundTexture;
 static unsigned int lifeTexture;
@@ -45,6 +50,41 @@ void mouseClick( int button, int state, int x, int y )
 {
   mouseButton=button;
   mouseMotion(x,y);
+}
+TEXTURE* readImg(char* fileName, int alpha)
+{
+  int rgbBytes,d,bytesPerRow,i,ob;
+  char *Img, *otherDate;
+  TEXTURE* t=malloc(sizeof(TEXTURE));
+  FILE *f;
+  HeadGr head;
+  f=fopen(fileName,"rb");
+  if (f==NULL)
+      return NULL;
+  else
+  {
+    fread(&head,54,1,f);
+    rgbBytes=head.biWidth*(3+alpha);
+    d=rgbBytes%4;
+    bytesPerRow=d ? rgbBytes+(4-d) :rgbBytes;
+    Img=(char*)malloc(bytesPerRow*head.biHeight);
+    otherDate=(char*) malloc(head.bfOffBits-54);
+    fread(otherDate,(head.bfOffBits-54),1,f);
+    fread(Img,bytesPerRow*head.biHeight,1,f);
+    fclose(f);
+    for (i=0;i<bytesPerRow*head.biHeight;i+=3)
+    {
+      ob=*(Img+i);
+      *(Img+i)=*(Img+i+2);
+      *(Img+2+i)=ob;
+    }
+    free(otherDate);
+    (*t).width=head.biWidth;
+    (*t).height=head.biHeight;
+    (*t).bytes_per_pixel=3+alpha;
+    (*t).pixel_data=Img;
+    return t;
+  }
 }
 int initTexture(TEXTURE tex)
 {
@@ -205,7 +245,10 @@ int main (int argc, char * argv[])
   glutKeyboardFunc(keyboard);
   glutSpecialFunc(funcKeys);
   //init textures 
-  backgroundTexture=initTexture(background);
+  TEXTURE *t=readImg("backgroundTexture.bmp",0);
+  backgroundTexture=initTexture(*t);
+  printf("%x\n",glGetError() );
+  free((*t).pixel_data);free(t);
   lifeTexture=initTexture(life);
   lonelinessTexture=initTexture(loneliness);
   overcrowdingTexture=initTexture(overcrowding);
