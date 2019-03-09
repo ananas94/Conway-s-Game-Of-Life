@@ -13,5 +13,5 @@ ALL: BUILD
 BUILD:
 	$(CC) $(C_SOURCES) $(INCLUDE_FOLDERS) $(LIBS) -o $(OUTPUT)
 
-CLEAN:
+clean:
 	$(RM) $(OUTPUT)
