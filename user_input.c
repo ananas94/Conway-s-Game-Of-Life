@@ -29,18 +29,19 @@ void funcKeys(int key, int x, int y)
   case GLUT_KEY_F9:
   {
     logic_cleanup_field();
+    break;
   }
   }
 }
 
-static int mousePressedButton;
+static int mousePressedButton = -1;
 void mouseClick(int button, int state, int x, int y)
 {
-  if (state == GLUT_DOWN)
+  //for some wired reason touchpad move genearate left button click
+  if (state == GLUT_DOWN && mousePressedButton == -1)
     mousePressedButton = button;
-  else
+  if (state == GLUT_UP && mousePressedButton == button)
     mousePressedButton = -1;
-
   mouseMotion(x, y);
 }
 
@@ -50,13 +51,8 @@ void mouseMotion(int x, int y)
   int cellY = y / cellSize;
   if (mousePressedButton == GLUT_LEFT_BUTTON)
     logic_set_alive(cellX, cellY);
-  /*if ( ( x / cellSize >= 0 && x / cellSize < fieldW ) &&
-         ( y / cellSize >= 0 && y / cellSize < fieldH ))
-      field[x / cellSize][y / cellSize] = ALIVE;*/
   if (mousePressedButton == GLUT_RIGHT_BUTTON)
     logic_set_clean(cellX, cellY);
-  /*if ((x / cellSize >= 0 && x / cellSize < fieldW) && (y / cellSize >= 0 && y / cellSize < fieldH))
-      field[x / cellSize][y / cellSize] = 0;*/
 }
 
 void init_user_input()
