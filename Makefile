@@ -1,5 +1,5 @@
 CC=gcc
-C_SOURCES=example.c 
+C_SOURCES=$(wildcard *.c)
 INCLUDE_FOLDERS=-I. 
 LIBS=-lglut \
 -lGL \
