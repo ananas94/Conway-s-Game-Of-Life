@@ -6,7 +6,9 @@
 #include "Textures.h"
 
 static int drawDead = 0;
-void graphics_change_draw_dead_state()
+
+void
+graphics_change_draw_dead_state()
 {
   drawDead ^= 1;
 }
@@ -16,7 +18,8 @@ static unsigned int lifeTexture;
 static unsigned int lonelinessTexture;
 static unsigned int overcrowdingTexture;
 
-int initTexture(TEXTURE tex)
+static int
+initTexture(TEXTURE tex)
 {
   int textureNum;
   glGenTextures(1, &textureNum);
@@ -35,7 +38,8 @@ int initTexture(TEXTURE tex)
   return textureNum;
 }
 
-TEXTURE *readImg(char *fileName, int alpha)
+static TEXTURE *
+readImg(char *fileName, int alpha)
 {
   int rgbBytes, d, bytesPerRow, i, ob;
   char *Img, *otherDate;
@@ -71,22 +75,8 @@ TEXTURE *readImg(char *fileName, int alpha)
   }
 }
 
-void init_graphics()
-{
-  glutDisplayFunc(display);
-  glutTimerFunc(100, reDisplay, 2);
-  //init textures
-  TEXTURE *t = readImg("backgroundTexture.bmp", 0);
-  backgroundTexture = initTexture(*t);
-
-  free((*t).pixel_data);
-  free(t);
-  lifeTexture = initTexture(aliveCell);
-  lonelinessTexture = initTexture(lonelyCell);
-  overcrowdingTexture = initTexture(overpopulatedCell);
-}
-
-void display()
+static void
+display()
 {
   int i, j;
   glClear(GL_COLOR_BUFFER_BIT);
@@ -112,40 +102,40 @@ void display()
   for (i = 0; i < fieldW; i++)
     for (j = 0; j < fieldH; j++)
     {
-      cell_state_t state = logic_get_cell_state(i,j);
-      if ( state == NONE ||
-           state != ALIVE && !drawDead )
-           continue;
-      
+      cell_state_t state = logic_get_cell_state(i, j);
+      if (state == NONE ||
+          state != ALIVE && !drawDead)
+        continue;
+
       glColor4f(1.0, 1.0, 1.0, 1.0);
       switch (state)
       {
-        case ALIVE:
-          glBindTexture(GL_TEXTURE_2D, lifeTexture);
-          break;
-        case DEAD_BY_LONELINESS:
-            glBindTexture(GL_TEXTURE_2D, lonelinessTexture);
-            break;
-        case DEAD_BY_OVERCROWDING:
-            glBindTexture(GL_TEXTURE_2D, overcrowdingTexture);
-          break;
+      case ALIVE:
+        glBindTexture(GL_TEXTURE_2D, lifeTexture);
+        break;
+      case DEAD_BY_LONELINESS:
+        glBindTexture(GL_TEXTURE_2D, lonelinessTexture);
+        break;
+      case DEAD_BY_OVERCROWDING:
+        glBindTexture(GL_TEXTURE_2D, overcrowdingTexture);
+        break;
       }
-    
-        glBegin(GL_QUADS);
-        glTexCoord2d(0, 0);
-        glVertex2i(i * cellSize, j * cellSize);
-        glTexCoord2d(0, 1);
-        glVertex2i((i + 1) * cellSize, j * cellSize);
-        glTexCoord2d(1, 1);
-        glVertex2i((i + 1) * cellSize, (j + 1) * cellSize);
-        glTexCoord2d(1, 0);
-        glVertex2i(i * cellSize, (j + 1) * cellSize);
-        glEnd();
+
+      glBegin(GL_QUADS);
+      glTexCoord2d(0, 0);
+      glVertex2i(i * cellSize, j * cellSize);
+      glTexCoord2d(0, 1);
+      glVertex2i((i + 1) * cellSize, j * cellSize);
+      glTexCoord2d(1, 1);
+      glVertex2i((i + 1) * cellSize, (j + 1) * cellSize);
+      glTexCoord2d(1, 0);
+      glVertex2i(i * cellSize, (j + 1) * cellSize);
+      glEnd();
     }
 
   glDisable(GL_BLEND);
   glDisable(GL_TEXTURE_2D);
-  
+
   //draw lines
   for (i = 0; i < fieldH; i++)
   {
@@ -166,8 +156,26 @@ void display()
   glutSwapBuffers();
 }
 
-void reDisplay(int value)
+static void 
+reDisplay(int value)
 {
   display();
   glutTimerFunc(30, reDisplay, 2);
+}
+
+
+
+void init_graphics()
+{
+  glutDisplayFunc(display);
+  glutTimerFunc(100, reDisplay, 2);
+  //init textures
+  TEXTURE *t = readImg("backgroundTexture.bmp", 0);
+  backgroundTexture = initTexture(*t);
+
+  free((*t).pixel_data);
+  free(t);
+  lifeTexture = initTexture(aliveCell);
+  lonelinessTexture = initTexture(lonelyCell);
+  overcrowdingTexture = initTexture(overpopulatedCell);
 }

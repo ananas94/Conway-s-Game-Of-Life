@@ -2,10 +2,7 @@
 #define CGL_GRAPHIC_H
 struct Texture;
 
-int initTexture(struct Texture tex);
-void reshape(int w, int h);
-void display();
-void reDisplay(int value);
+
 void graphics_change_draw_dead_state();
 void init_graphics();
 
