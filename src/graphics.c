@@ -51,13 +51,13 @@ readImg(char *fileName, int alpha)
     return NULL;
   else
   {
-    fread(&head, 54, 1, f);
+    fread(&head, sizeof(head), 1, f);
     rgbBytes = head.biWidth * (3 + alpha);
     d = rgbBytes % 4;
     bytesPerRow = d ? rgbBytes + (4 - d) : rgbBytes;
     Img = (char *)malloc(bytesPerRow * head.biHeight);
-    otherDate = (char *)malloc(head.bfOffBits - 54);
-    fread(otherDate, (head.bfOffBits - 54), 1, f);
+    otherDate = (char *)malloc(head.bfOffBits - sizeof(head));
+    fread(otherDate, (head.bfOffBits - sizeof(head)), 1, f);
     fread(Img, bytesPerRow * head.biHeight, 1, f);
     fclose(f);
     for (i = 0; i < bytesPerRow * head.biHeight; i += 3)
