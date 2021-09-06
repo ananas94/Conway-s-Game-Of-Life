@@ -13,6 +13,8 @@ OBJ_DIR=$(BUILD_FOLDER)/obj
 DEP_DIR=$(BUILD_FOLDER)/dep
 
 C_SOURCES=$(wildcard $(SOURCES_DIR)/*.c)
+CFLAGS=-fsanitize=address -g
+
 
 DEP=$(addprefix $(DEP_DIR)/,$(notdir $(C_SOURCES:.c=.d)))
 OBJ=$(addprefix $(OBJ_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
@@ -20,7 +22,7 @@ OBJ=$(addprefix $(OBJ_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
 
 LIBS=-lglut \
 -lGL \
--lGLU
+-lGLU 
 
 RM=rm -fr
 
@@ -36,10 +38,10 @@ $(DEP_DIR)/%.d : $(SOURCES_DIR)/%.c  Makefile | $(DEP_DIR)
 
 -include $(DEP)
 $(OBJ_DIR)/%.o : $(SOURCES_DIR)/%.c | $(OBJ_DIR)
-	$(CC) $(INCLUDE_FOLDERS) -c $< -o $@
+	$(CC) $(CFLAGS) $(INCLUDE_FOLDERS) -c $< -o $@
 
 $(OUTPUT): $(C_SOURCES) $(OBJ)
-	$(CC) $(OBJ) $(LIBS) -o $(OUTPUT)
+	$(CC) $(CFLAGS) $(OBJ) $(LIBS) -o $(OUTPUT)
 
 clean:
 	$(RM) $(OUTPUT)
