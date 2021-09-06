@@ -69,9 +69,11 @@ void init_logic()
 
 void logic_set_clean(int x, int y)
 {
-    field[x][y]=NONE;
+    if ( 0 <= x &&  x < fieldW && 0 <= y && y < fieldH )
+        field[x][y]=NONE;
 }
 void logic_set_alive(int x, int y)
 {
-    field[x][y]=ALIVE;
+    if ( 0 <= x &&  x < fieldW && 0 <= y && y < fieldH )
+        field[x][y]=ALIVE;
 }
