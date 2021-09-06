@@ -1,17 +1,46 @@
+OUTPUT="GameOfLife"
+
+.PHONY: all
+all: $(OUTPUT) 
+
 CC=gcc
-C_SOURCES=$(wildcard src/*.c)
+
+BUILD_FOLDER:=build
+
 INCLUDE_FOLDERS=-I./include
+SOURCES_DIR=./src
+OBJ_DIR=$(BUILD_FOLDER)/obj
+DEP_DIR=$(BUILD_FOLDER)/dep
+
+C_SOURCES=$(wildcard $(SOURCES_DIR)/*.c)
+
+DEP=$(addprefix $(DEP_DIR)/,$(notdir $(C_SOURCES:.c=.d)))
+OBJ=$(addprefix $(OBJ_DIR)/,$(notdir $(C_SOURCES:.c=.o)))
+
+
 LIBS=-lglut \
 -lGL \
 -lGLU
 
-OUTPUT="GameOfLife"
-RM=rm -f 
+RM=rm -fr
 
-all: BUILD
 
-BUILD:
-	$(CC) $(C_SOURCES) $(INCLUDE_FOLDERS) $(LIBS) -o $(OUTPUT)
+$(OBJ_DIR):
+	mkdir -p $@
+
+$(DEP_DIR):
+	mkdir -p $@
+
+$(DEP_DIR)/%.d : $(SOURCES_DIR)/%.c  Makefile | $(DEP_DIR)
+	$(CC) $(INCLUDE_FOLDERS) -MM -MT $(addprefix $(OBJ_DIR)/,$(notdir $(<:.c=.o)))  -c $< -o $@
+
+-include $(DEP)
+$(OBJ_DIR)/%.o : $(SOURCES_DIR)/%.c | $(OBJ_DIR)
+	$(CC) $(INCLUDE_FOLDERS) -c $< -o $@
+
+$(OUTPUT): $(C_SOURCES) $(OBJ)
+	$(CC) $(OBJ) $(LIBS) -o $(OUTPUT)
 
 clean:
 	$(RM) $(OUTPUT)
+	$(RM) $(BUILD_FOLDER)
