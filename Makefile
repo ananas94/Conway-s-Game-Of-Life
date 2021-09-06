@@ -1,6 +1,6 @@
 CC=gcc
-C_SOURCES=$(wildcard *.c)
-INCLUDE_FOLDERS=-I. 
+C_SOURCES=$(wildcard src/*.c)
+INCLUDE_FOLDERS=-I./include
 LIBS=-lglut \
 -lGL \
 -lGLU
@@ -8,7 +8,7 @@ LIBS=-lglut \
 OUTPUT="GameOfLife"
 RM=rm -f 
 
-ALL: BUILD
+all: BUILD
 
 BUILD:
 	$(CC) $(C_SOURCES) $(INCLUDE_FOLDERS) $(LIBS) -o $(OUTPUT)
