@@ -5,6 +5,12 @@ all: $(OUTPUT)
 
 CC=gcc
 
+ifeq ($(DEBUG),true)
+	CFLAGS += -fsanitize=address 
+else
+	CFLAGS += -O2
+endif
+
 BUILD_FOLDER:=build
 
 INCLUDE_FOLDERS=-I./include
@@ -13,7 +19,7 @@ OBJ_DIR=$(BUILD_FOLDER)/obj
 DEP_DIR=$(BUILD_FOLDER)/dep
 
 C_SOURCES=$(wildcard $(SOURCES_DIR)/*.c)
-CFLAGS=-fsanitize=address -g
+CFLAGS += -g -Wall
 
 
 DEP=$(addprefix $(DEP_DIR)/,$(notdir $(C_SOURCES:.c=.d)))
