@@ -46,7 +46,7 @@ update_field_state(int x, int y)
 
 void logic_step(int unused)
 {
-    int i, j, k, g;
+    int i, j;
     //clear numb array
     for (i = 0; i < fieldW; i++)
         for (j = 0; j < fieldH; j++)

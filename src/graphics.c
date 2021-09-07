@@ -21,7 +21,7 @@ static unsigned int overcrowdingTexture;
 static int
 initTexture(TEXTURE tex)
 {
-  int textureNum;
+  unsigned int textureNum;
   glGenTextures(1, &textureNum);
   glBindTexture(GL_TEXTURE_2D, textureNum);
   glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -41,7 +41,7 @@ initTexture(TEXTURE tex)
 static TEXTURE *
 readImg(char *fileName, int alpha)
 {
-  int rgbBytes, d, bytesPerRow, i, ob;
+  int rgbBytes, d, bytesPerRow, i, ob, ret;
   char *Img, *otherDate;
   TEXTURE *t = malloc(sizeof(TEXTURE));
   FILE *f;
@@ -51,14 +51,18 @@ readImg(char *fileName, int alpha)
     return NULL;
   else
   {
-    fread(&head, sizeof(head), 1, f);
+    ret = fread(&head, sizeof(head), 1, f);
+    if (ret != sizeof(head))  return NULL;
     rgbBytes = head.biWidth * (3 + alpha);
     d = rgbBytes % 4;
     bytesPerRow = d ? rgbBytes + (4 - d) : rgbBytes;
     Img = (char *)malloc(bytesPerRow * head.biHeight);
     otherDate = (char *)malloc(head.bfOffBits - sizeof(head));
-    fread(otherDate, (head.bfOffBits - sizeof(head)), 1, f);
-    fread(Img, bytesPerRow * head.biHeight, 1, f);
+    ret = fread(otherDate, (head.bfOffBits - sizeof(head)), 1, f);
+    if (ret != head.bfOffBits - sizeof(head)) return NULL;
+    ret = fread(Img, bytesPerRow * head.biHeight, 1, f);
+    if (ret != head.bfOffBits - sizeof(head)) return NULL;
+ 
     fclose(f);
     for (i = 0; i < bytesPerRow * head.biHeight; i += 3)
     {
@@ -103,8 +107,8 @@ display()
     for (j = 0; j < fieldH; j++)
     {
       cell_state_t state = logic_get_cell_state(i, j);
-      if (state == NONE ||
-          state != ALIVE && !drawDead)
+      if ( (state == NONE) ||
+           (state != ALIVE && !drawDead ))
         continue;
 
       glColor4f(1.0, 1.0, 1.0, 1.0);
@@ -119,6 +123,8 @@ display()
       case DEAD_BY_OVERCROWDING:
         glBindTexture(GL_TEXTURE_2D, overcrowdingTexture);
         break;
+      default:
+	break;
       }
 
       glBegin(GL_QUADS);
@@ -171,6 +177,11 @@ void init_graphics()
   glutTimerFunc(100, reDisplay, 2);
   //init textures
   TEXTURE *t = readImg("backgroundTexture.bmp", 0);
+  if (!t) 
+  {
+	  perror("texture is borken");
+	  exit(-1);
+  }
   backgroundTexture = initTexture(*t);
 
   free((*t).pixel_data);

@@ -2,7 +2,7 @@
 
 void keyboard(unsigned char key, int x, int y)
 {
-  if (key = ' ')
+  if (key == ' ')
     timer_logic_execution_state_switch();
 }
 
